@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eco Survivor - Pro Clean: Limpia, Explora, Sobrevive</title>
+    <meta name="description" content="Eco Survivor es un videojuego de supervivencia ecológica de Pro Clean. Limpia una ciudad contaminada, evita enemigos y restaura tu salud para salvar el planeta." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-dark: #1b5e20;
+            --green-medium: #388e3c;
+            --green-base: #2e7d32;
+            --green-light: #e8f5e9;
+            --green-accent: #43a047;
+            --white: #fff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --bg-body: #F8FDF8; /* Fondo blanco muy suave */
+            --bg-neutral-light: #f1f8f7; /* Para main content */
+            --text-color-primary: #2b4d2a; /* Darker green for readability */
+            --text-color-secondary: #366c22;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body); /* Usando la nueva variable de fondo */
+            color: var(--text-color-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--green-base), var(--green-dark));
+            color: var(--white);
+            padding: 1rem clamp(1rem, 5vw, 2.5rem);
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 6px 12px var(--shadow-medium);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            letter-spacing: 3px;
+            font-weight: 900;
+            text-shadow: 1px 1px 6px var(--shadow-dark);
+            font-family: 'Montserrat', sans-serif;
+            user-select: none;
+        }
+
+        header button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 35px;
+            height: 25px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            z-index: 1001;
+        }
+
+        header button:hover, header button:focus {
+            background-color: rgba(67, 160, 71, 0.3);
+            outline: none;
+        }
+
+        header button span {
+            display: block;
+            height: 4px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 1px 3px var(--shadow-dark);
+            transition: all 0.3s ease;
+        }
+
+        header button.open span:nth-child(1) {
+            transform: translateY(10px) rotate(45deg);
+        }
+
+        header button.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        header button.open span:nth-child(3) {
+            transform: translateY(-10px) rotate(-45deg);
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--green-base), var(--green-dark));
+            box-shadow: 4px 0 20px var(--shadow-dark);
+            padding: 6rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+            user-select: none;
+        }
+
+        nav.open {
+            left: 0;
+        }
+
+        nav a {
+            color: var(--white);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 0 0 transparent;
+        }
+
+        nav a:hover,
+        nav a:focus {
+            background: var(--green-accent);
+            box-shadow: 0 0 15px var(--green-accent);
+            transform: translateX(5px);
+            outline: none;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 998;
+        }
+
+        #overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 7.5rem auto 3rem;
+            padding: 2rem clamp(1.25rem, 4vw, 2.5rem);
+            border-radius: 30px;
+            background: var(--bg-neutral-light); /* Main content background */
+            box-shadow:
+                6px 6px 12px #a8dbd7,
+                -6px -6px 12px #f9fffd;
+            user-select: text;
+            min-height: calc(100vh - 10.5rem);
+        }
+
+        h2.section-title {
+            color: var(--green-medium);
+            border-bottom: 4px solid var(--green-accent);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.8rem;
+            font-weight: 800;
+            font-size: clamp(1.8rem, 5vw, 2.2rem);
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 1px 3px var(--shadow-light);
+            border-radius: 10px;
+            max-width: fit-content;
+            padding-right: 10px;
+        }
+
+        section {
+            margin-bottom: 4.5rem;
+        }
+
+        section img {
+            max-width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        .features, .team {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow:
+                8px 8px 16px #c3d8b4,
+                -8px -8px 16px #f0faf0;
+            padding: 2rem 1.75rem;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+            user-select: none;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow:
+                12px 12px 24px #a2c581,
+                -12px -12px 24px #e8f6db;
+            cursor: pointer;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: clamp(1.3rem, 3vw, 1.6rem);
+            color: var(--green-dark);
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: var(--text-color-secondary);
+            line-height: 1.7;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        /* Removido el estilo para img dentro de .card para elementos específicos */
+        /* .card img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(67, 160, 71, 0.4);
+            object-fit: contain;
+        } */
+
+        a.button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--green-accent), #66bb6a);
+            color: var(--white);
+            padding: 1.1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            text-decoration: none;
+            box-shadow:
+                0 8px 20px rgba(67, 160, 71, 0.7),
+                inset 0 -3px 5px rgba(255, 255, 255, 0.3);
+            transition: background 0.35s ease, box-shadow 0.35s ease, transform 0.2s ease;
+            user-select: none;
+            margin-top: 2.5rem;
+            text-align: center;
+            border: none;
+        }
+
+        a.button:hover,
+        a.button:focus {
+            background: linear-gradient(135deg, var(--green-dark), var(--green-accent));
+            box-shadow:
+                0 12px 28px rgba(46, 125, 50, 0.8),
+                inset 0 -4px 6px rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            outline: none;
+        }
+
+        footer {
+            background: linear-gradient(90deg, var(--green-base), var(--green-dark));
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.95rem;
+            box-shadow: 0 -4px 12px var(--shadow-medium);
+            user-select: none;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* Movement demo */
+        .movement-demo {
+            margin-top: 1.8rem;
+            background: #d6ebe9;
+            border: 3px solid var(--green-accent);
+            border-radius: 40px;
+            width: 100%;
+            max-width: 380px;
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                inset 3px 3px 15px rgba(34, 77, 19, 0.55),
+                inset -3px -3px 15px rgba(160, 215, 112, 0.6);
+            user-select: none;
+            align-self: center;
+        }
+
+        .character {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #66bb6a, var(--green-accent));
+            border-radius: 50% 50% 60% 60% / 60% 60% 50% 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow:
+                0 6px 16px rgba(67, 160, 71, 0.8),
+                inset 0 1px 5px rgba(255, 255, 255, 0.7);
+            transition: left 0.1s linear, top 0.1s linear;
+            transform: translate(-50%, -50%);
+        }
+
+        .control-instruction {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-color-primary);
+            font-style: italic;
+            font-weight: 600;
+            user-select: none;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+
+        /* Carrusel de personajes */
+        .character-carousel-container {
+            position: relative;
+            margin: 2rem auto;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .character-carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .character-card {
+            flex: 0 0 auto;
+            width: 250px; /* Ancho fijo para cada tarjeta de personaje */
+            margin-right: 20px; /* Espacio entre tarjetas */
+            padding: 1.5rem;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            scroll-snap-align: start;
+        }
+
+        .character-card:last-child {
+            margin-right: 0;
+        }
+
+        .character-card h4 {
+            font-size: 1.3rem;
+            color: var(--green-dark);
+            margin: 0.5rem 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .character-card p {
+            font-size: 0.95rem;
+            color: var(--text-color-secondary);
+            line-height: 1.5;
+        }
+
+        .carousel-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--green-accent);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 8px var(--shadow-medium);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            z-index: 10;
+        }
+
+        .carousel-button:hover {
+            background-color: var(--green-dark);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .carousel-button:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .carousel-button.left {
+            left: -20px;
+        }
+
+        .carousel-button.right {
+            right: -20px;
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem clamp(1rem, 4vw, 1.5rem);
+            }
+
+            nav {
+                width: 250px;
+                left: -260px;
+                padding-top: 5rem;
+            }
+            nav.open {
+                left: 0;
+            }
+
+            main {
+                margin: 6.5rem auto 2.5rem;
+                padding: 1.5rem clamp(1rem, 4vw, 1.5rem);
+                border-radius: 25px;
+            }
+
+            .section-title {
+                font-size: clamp(1.6rem, 5vw, 2rem);
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            a.button {
+                display: block;
+                width: 100%;
+                padding: 1rem 0;
+                font-size: 1.2rem;
+            }
+
+            .movement-demo {
+                max-width: 100%;
+                height: 160px;
+            }
+
+            .character-carousel-container {
+                padding: 0 30px;
+            }
+
+            .carousel-button.left {
+                left: 5px;
+            }
+
+            .carousel-button.right {
+                right: 5px;
+            }
+
+            .character-carousel {
+                overflow-x: scroll;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.6rem;
+            }
+
+            nav {
+                width: 100vw;
+                left: -100vw;
+                border-radius: 0;
+            }
+            nav a {
+                font-size: 1rem;
+                padding: 0.6rem 0.8rem;
+            }
+
+            main {
+                margin: 5.5rem auto 2rem;
+                border-radius: 20px;
+                box-shadow:
+                    4px 4px 8px #a8dbd7,
+                    -4px -4px 8px #f9fffd;
+            }
+
+            h2.section-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .card {
+                padding: 1.2rem;
+            }
+
+            .character-card {
+                width: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Eco Survivor</h1>
+        <button aria-label="Abrir menú de navegación" id="btnMenu" aria-expanded="false" aria-controls="navMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <nav id="navMenu" aria-hidden="true">
+        <a href="#inicio">Inicio</a>
+        <a href="#que-es-eco-survivor">¿Qué es Eco Survivor?</a> <a href="#caracteristicas">Características</a>
+        <a href="#personajes">Personajes</a>
+        <a href="#equipo">Equipo</a>
+        <a href="#quienes-omos">Quiénes Somos</a>
+        <a href="#descarga">Descarga</a>
+    </nav>
+    <div id="overlay"></div>
+
+    <main>
+        <section id="inicio" aria-labelledby="inicio-title">
+            <h2 id="inicio-title" class="section-title">¡Bienvenido a Eco Survivor!</h2>
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="Una vista de una ciudad con un árbol en primer plano, simbolizando la coexistencia de lo urbano y la naturaleza." style="width:100%; border-radius: 30px; box-shadow: 0 6px 14px var(--shadow-light); margin-bottom:1.5rem;">
+            <p><strong>Eco Survivor</strong> es un emocionante videojuego de supervivencia ecológica desarrollado por <em>Pro Clean</em>. Sumérgete en la misión de limpiar una ciudad contaminada, enfrentar desafíos y restaurar el equilibrio del planeta. ¡Cada acción cuenta para transformar el mundo!</p>
+        </section>
+
+        <section id="que-es-eco-survivor" aria-labelledby="que-es-eco-survivor-title"> <h2 id="que-es-eco-survivor-title" class="section-title">¿Qué es Eco Survivor?</h2>
+            <p>Eco Survivor te sumerge en una aventura de **limpieza y restauración**. Como jugador, tu objetivo principal es **recolectar basura** esparcida por un entorno urbano devastado por la contaminación, mientras evitas a los **enemigos de tipo 'slime'** que intentarán detenerte. El tiempo es crucial, así que deberás ser estratégico en tus movimientos y en la recolección de los **recursos que te ayuden a sobrevivir**, como las manzanas que restauran tu salud. El juego combina la **emoción de la supervivencia** con un mensaje de concienciación ambiental, convirtiendo cada partida en un paso hacia un planeta más limpio.</p>
+        </section>
+
+        <section id="caracteristicas" aria-labelledby="caracteristicas-title">
+            <h2 id="caracteristicas-title" class="section-title">Descubre las Características del Juego</h2>
+            <div class="features">
+                <article class="card" aria-label="Característica: Jugabilidad interactiva">
+                    <h3>🎮 Jugabilidad Dinámica</h3>
+                    <p>Elige a tu personaje, personaliza tu experiencia y explora un vasto mapa bajo un límite de tiempo desafiante. ¡Prepárate para la acción y la aventura mientras te mueves por la ciudad!</p>
+                    <div class="movement-demo" aria-label="Demostración interactiva de movimiento de personaje">
+                        <div class="character" id="character"></div>
+                    </div>
+                    <p class="control-instruction">Usa las <strong>flechas</strong> o las teclas <strong>W, A, S, D</strong> para mover el cuadrado verde y practicar tu control.</p>
+                </article>
+                <article class="card" aria-label="Característica: Basura y enemigos">
+                    <h3>🗑️ Residuos y Enemigos</h3>
+                    <p>Tu misión principal es recolectar residuos esparcidos por la ciudad. Pero ten cuidado: enemigos tipo slime acechan, listos para interponerse en tu camino y hacer tu misión más difícil. ¡Enfréntalos o esquívalos inteligentemente!</p>
+                </article>
+                <article class="card" aria-label="Característica: Recuperación Estratégica">
+                    <h3>Recuperación Estratégica</h3>
+                    <p>La limpieza de la ciudad es agotadora. Afortunadamente, puedes encontrar objetos que reponen tu vida y te mantienen en la lucha. ¡Busca estos valiosos ítems para asegurar tu supervivencia y éxito!</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="personajes" aria-labelledby="personajes-title">
+            <h2 id="personajes-title" class="section-title">Nuestros Héroes de Eco Survivor</h2>
+            <div class="character-carousel-container">
+                <div class="character-carousel" id="characterCarousel">
+                    <article class="character-card">
+                        <h4>Luna 🌙</h4>
+                        <p>Una estratega silenciosa, con una conexión innata con la naturaleza y un don para el sigilo. Limpia la ciudad con precisión.</p>
+                    </article>
+                    <article class="character-card">
+                        <h4>Toby ♻️</h4>
+                        <p>Un ingeniero optimista y enérgico. Transforma la basura en soluciones ingeniosas, siempre con una sonrisa y gran entusiasmo.</p>
+                    </article>
+                </div>
+                <button class="carousel-button left" aria-label="Anterior personaje">&#10094;</button>
+                <button class="carousel-button right" aria-label="Siguiente personaje">&#10095;</button>
+            </div>
+            <p style="text-align: center; margin-top: 1.5rem; font-style: italic; color: var(--text-color-primary);">Elige a tu héroe y comienza la aventura de limpiar la ciudad.</p>
+        </section>
+
+        <section id="equipo" aria-labelledby="equipo-title">
+            <h2 id="equipo-title" class="section-title">Conoce a Nuestro Equipo de Desarrollo</h2>
+            <div class="team">
+                <article class="card" aria-label="Miembro del equipo: María">
+                    <h3>María</h3>
+                    <p>Presentadora y coordinadora general del proyecto. Su visión guía cada paso del desarrollo de Eco Survivor.</p>
+                </article>
+                <article class="card" aria-label="Miembro del equipo: Alfredo">
+                    <h3>Alfredo</h3>
+                    <p>Diseñador de diagramas UML y artífice de la estructura orientada a objetos, la columna vertebral de nuestro juego.</p>
+                </article>
+                <article class="card" aria-label="Miembro del equipo: Kevin">
+                    <h3>Kevin</h3>
+                    <p>Experto en la implementación en Godot y responsable del innovador sistema de spawners que da vida al mundo del juego.</p>
+                </article>
+                <article class="card" aria-label="Miembro del equipo: Daniela">
+                    <h3>Daniela</h3>
+                    <p>Encargada de la definición de requerimientos funcionales y no funcionales, asegurando que Eco Survivor cumpla con todas las expectativas.</p>
+                </article>
+                <article class="card" aria-label="Miembro del equipo: Fiorella">
+                    <h3>Fiorella</h3>
+                    <p>Diseñadora del menú, sistema de pausa y clave en la creación de una experiencia de usuario fluida e intuitiva.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="quienes-omos" aria-labelledby="quienes-omos-title">
+            <h2 id="quienes-omos-title" class="section-title">Sobre Pro Clean</h2>
+            <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Un grupo de personas trabajando juntas y sonriendo, representando al equipo de Pro Clean." style="width:100%; border-radius: 30px; box-shadow: 0 6px 14px var(--shadow-light); margin-bottom:1.5rem;">
+            <p>Somos <strong>Pro Clean</strong>, un equipo apasionado y comprometido con el medio ambiente y la educación a través del entretenimiento digital. Nuestro principal objetivo es desarrollar videojuegos divertidos y atractivos que, al mismo tiempo, inspiren a nuestros jugadores a tomar conciencia y cuidar activamente nuestro planeta.</p>
+            <p>En Pro Clean, reunimos talentos en diseño de juegos, programación avanzada y gestión de proyectos para crear experiencias innovadoras que no solo diviertan, sino que también generen un impacto positivo y duradero en la sociedad.</p>
+        </section>
+
+        <section id="descarga" aria-labelledby="descarga-title">
+            <h2 id="descarga-title" class="section-title">¡Descarga Eco Survivor Ahora!</h2>
+            <p>La versión beta de Eco Survivor está disponible para PC. ¡Sé uno de los primeros en jugar y únete a la misión de limpiar el mundo!</p>
+            <a href="#" class="button" aria-label="Descargar la demo de Eco Survivor">Descargar Demo (PC)</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Pro Clean | Proyecto académico para Feria Gamer</p>
+    </footer>
+
+    <script>
+        (() => {
+            // Menu toggle
+            const btnMenu = document.getElementById('btnMenu');
+            const navMenu = document.getElementById('navMenu');
+            const overlay = document.getElementById('overlay');
+            let lastFocus = null;
+
+            function openMenu() {
+                navMenu.classList.add('open');
+                navMenu.setAttribute('aria-hidden', 'false');
+                btnMenu.classList.add('open');
+                btnMenu.setAttribute('aria-expanded', 'true');
+                overlay.classList.add('active');
+                lastFocus = document.activeElement;
+                
+                navMenu.querySelectorAll('a').forEach(link => link.setAttribute('tabindex', '0'));
+                
+                navMenu.querySelector('a').focus();
+            }
+
+            function closeMenu() {
+                navMenu.classList.remove('open');
+                navMenu.setAttribute('aria-hidden', 'true');
+                btnMenu.classList.remove('open');
+                btnMenu.setAttribute('aria-expanded', 'false');
+                overlay.classList.remove('active');
+                
+                navMenu.querySelectorAll('a').forEach(link => link.setAttribute('tabindex', '-1'));
+                
+                if(lastFocus) {
+                    lastFocus.focus();
+                } else {
+                    btnMenu.focus();
+                }
+            }
+
+            btnMenu.addEventListener('click', () => {
+                if(navMenu.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            overlay.addEventListener('click', closeMenu);
+
+            document.addEventListener('keydown', e => {
+                if(e.key === 'Escape' && navMenu.classList.contains('open')) {
+                    e.preventDefault();
+                    closeMenu();
+                }
+            });
+
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').slice(1);
+                    const target = document.getElementById(targetId);
+                    if(target) {
+                        closeMenu();
+                        target.scrollIntoView({behavior: 'smooth'});
+                        target.focus();
+                    }
+                });
+                link.setAttribute('tabindex', '-1');
+            });
+
+            document.querySelectorAll('main section').forEach(section => {
+                section.setAttribute('tabindex', '-1');
+            });
+
+            // Movement demo
+            const character = document.getElementById('character');
+            const container = character.parentElement;
+            const step = 8;
+            let posX = container.clientWidth / 2 - character.clientWidth / 2;
+            let posY = container.clientHeight / 2 - character.clientHeight / 2;
+
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
+            function updatePos() {
+                character.style.left = posX + 'px';
+                character.style.top = posY + 'px';
+            }
+            updatePos();
+
+            window.addEventListener('keydown', e => {
+                const key = e.key.toLowerCase();
+                let moved = false;
+                
+                const containerRect = container.getBoundingClientRect();
+                const characterRect = character.getBoundingClientRect();
+
+                const maxPosX = containerRect.width - characterRect.width;
+                const maxPosY = containerRect.height - characterRect.height;
+
+                switch(key) {
+                    case 'arrowup':
+                    case 'w':
+                        posY -= step;
+                        moved = true;
+                        break;
+                    case 'arrowdown':
+                    case 's':
+                        posY += step;
+                        moved = true;
+                        break;
+                    case 'arrowleft':
+                    case 'a':
+                        posX -= step;
+                        moved = true;
+                        break;
+                    case 'arrowright':
+                    case 'd':
+                        posX += step;
+                        moved = true;
+                        break;
+                }
+
+                if(moved) {
+                    posX = clamp(posX, 0, maxPosX);
+                    posY = clamp(posY, 0, maxPosY);
+                    updatePos();
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                const containerRect = container.getBoundingClientRect();
+                const characterRect = character.getBoundingClientRect();
+                posX = clamp(posX, 0, containerRect.width - characterRect.width);
+                posY = clamp(posY, 0, containerRect.height - characterRect.height);
+                updatePos();
+            });
+
+            // Character Carousel Logic
+            const characterCarousel = document.getElementById('characterCarousel');
+            const carouselLeftBtn = document.querySelector('.carousel-button.left');
+            const carouselRightBtn = document.querySelector('.carousel-button.right');
+            // Ancho de la tarjeta (250px) + margin-right (20px) = 270px
+            const scrollAmount = 270; 
+
+            carouselRightBtn.addEventListener('click', () => {
+                characterCarousel.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+
+            carouselLeftBtn.addEventListener('click', () => {
+                characterCarousel.scrollBy({
+                    left: -scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
